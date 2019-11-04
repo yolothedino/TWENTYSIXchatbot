@@ -41,3 +41,11 @@ Questions and entities that the chatbot MUST be able to understand
 * WHO <name>
 
 ## Chatbot DO NOT HAVE TO
+
+* take in entities/responses that are longer than MAX_ENTITY/MAX_RESPONSE amount of characters
+* Account for every single 'where/what/who'. If there is a "Who is Bob" it's not a must for there to be a "What is Bob" and "Where is Bob".
+* check for acronyms, sophisticated matching, case-sensitivity, etc. Case insensitive is fine.
+
+## Other important Things
+
+Chatbot's 'knowledge file' to be stored in .ini format or other similar file formats. There's already an initialized INI file inside the repo for your reference
