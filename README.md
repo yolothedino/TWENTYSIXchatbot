@@ -11,7 +11,7 @@ Implement a chatbot in C that converses in console
 * Implement smalltalk functions - chatbot_is_smalltalk() and chatbot_do_smalltalk()
 * Implement hardcoded QnA to test ability to understand and answer questions
 * Implement ability to 'insert' knowledge into the database directly, and have the bot adapt
-* Upgrade the bot to ask for answers if it don't understand question and then use the answer later
+* Upgrade the bot to ask for answers if it don't understand question and then use the answer later <<< probably the most important segment
 * Add function for bot to reset itself
 * Implement loading function, test if bot can properly understand questions/answers from the loaded files
 * Implement saving function and test if it saves properly and works with loading
