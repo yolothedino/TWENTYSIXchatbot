@@ -83,7 +83,7 @@ int chatbot_main(int inc, char *inv[], char *response, int n) {
 	
 	/* check for empty input */
 	if (inc < 1) {
-		snprintf(response, n, "");
+		snprintf(response, n, "XAXAXAXAXA");	//never seems to activate
 		return 0;
 	}
 
@@ -101,7 +101,7 @@ int chatbot_main(int inc, char *inv[], char *response, int n) {
 	else if (chatbot_is_save(inv[0]))
 		return chatbot_do_save(inc, inv, response, n);
 	else {
-		snprintf(response, n, "I don't understand \"%s\".", inv[0]);
+		snprintf(response, n, "I don't understand \"%s\".", inv[0]);		//somehow leads to here despite smalltalk activating correctly
 		return 0;
 	}
 
@@ -194,7 +194,7 @@ int chatbot_is_question(const char *intent) {
 	
 	/* to be implemented */
 	
-	return 0;
+	return compare_token(intent, "who") == 0 || compare_token(intent, "where") == 0 || compare_token(intent, "what") == 0;
 	
 }
 
@@ -215,7 +215,7 @@ int chatbot_is_question(const char *intent) {
 int chatbot_do_question(int inc, char *inv[], char *response, int n) {
 	
 	/* to be implemented */
-	 
+	snprintf(response, n, "WOT WOT WOT");
 	return 0;
 	 
 }
@@ -309,8 +309,8 @@ int chatbot_do_save(int inc, char *inv[], char *response, int n) {
 int chatbot_is_smalltalk(const char *intent) {
 	
 	/* to be implemented */
-	
-	return 0;
+	//return compare_token(intent, "goodbye") == 0;
+	return compare_token(intent, "hi") == 0 || compare_token(intent, "hello") == 0 || compare_token(intent, "joke") == 0 || compare_token(intent, "food") == 0 || compare_token(intent, "goodbye") == 0;
  
 }
 
@@ -326,10 +326,29 @@ int chatbot_is_smalltalk(const char *intent) {
  *   1, if the chatbot should stop chatting (e.g. the smalltalk was "goodbye" etc.)
  */
 int chatbot_do_smalltalk(int inc, char *inv[], char *response, int n) {
-	
-	/* to be implemented */
-	
+	//entering smalltalk for the first time leads to weird text. second time and onwards, smalltalk is ignored, and the previous input is recognized instead
+	//hardcoded implementation
+
+	//if (inv[0] == "hi")
+		//snprintf(response, 5, "Hello");
+	if ((compare_token(inv[0], "goodbye")) == 0)		//works better than inv[0] == "goodbye"
+	{
+		snprintf(response, n, "Goodbye!");
+		return 1;	
+	}
+
+	else if ((compare_token(inv[0], "hi")) == 0)
+		snprintf(response, n, "Hello!");
+	else if ((compare_token(inv[0], "joke")) == 0)
+		snprintf(response, n, "hhahHAhahAHAHaha");
+	else if ((compare_token(inv[0], "hello")) == 0)
+		snprintf(response, n, "Hi!");
+	else if ((compare_token(inv[0], "food")) == 0)
+		snprintf(response, n, "Fries");
+		
 	return 0;
+	//all above code can activte, yet program still ignores everything and says it "don't understand"
+		
 	
 }
   

@@ -42,8 +42,10 @@ int main(int argc, char *argv[]) {
 	
 		do {
 			/* read the line */
-			printf("%s: ", chatbot_username());
+			printf("%s: ", chatbot_username());		//your name here, for user input
 			fgets(input, MAX_INPUT, stdin);
+
+			//input[strcspn(input, "\n")] = '\0';	//JACK CODE -  trailing \n, replace with null
 			
 			/* split it into words */
 			inc = 0;
@@ -64,8 +66,8 @@ int main(int argc, char *argv[]) {
 		} while (inc < 1);
 		
 		/* invoke the chatbot */
-		done = chatbot_main(inc, inv, output, MAX_RESPONSE);
-		printf("%s: %s\n", chatbot_botname(), output);
+		done = chatbot_main(inc, inv, output, MAX_RESPONSE);		//chatbot_main returns 0 if program still running, 1 if exit
+		printf("|=MAINCHATBOTFILE=| %s: %s\n", chatbot_botname(), output);	//JACK CODE - |=MAINCHATBOTFILE=| is for testing
 		
 	} while (!done);
 	
@@ -126,6 +128,7 @@ void prompt_user(char *buf, int n, const char *format, ...) {
 	
 	/* get the response from the user */
 	fgets(buf, n, stdin);
+
 	char *nl = strchr(buf, '\n');
 	if (nl != NULL)
 		*nl = '\0';
