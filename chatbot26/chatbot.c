@@ -39,7 +39,7 @@
  * chatbot_username(), respectively. The main loop will print the strings
  * returned by these functions at the start of each line.
  */
- 
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
 #include "chat1002.h"
@@ -83,7 +83,7 @@ int chatbot_main(int inc, char *inv[], char *response, int n) {
 	
 	/* check for empty input */
 	if (inc < 1) {
-		snprintf(response, n, "XAXAXAXAXA");	//never seems to activate
+		snprintf(response, n, "");
 		return 0;
 	}
 
@@ -101,7 +101,7 @@ int chatbot_main(int inc, char *inv[], char *response, int n) {
 	else if (chatbot_is_save(inv[0]))
 		return chatbot_do_save(inc, inv, response, n);
 	else {
-		snprintf(response, n, "I don't understand \"%s\".", inv[0]);		//somehow leads to here despite smalltalk activating correctly
+		snprintf(response, n, "I don't understand \"%s\".", inv[0]);
 		return 0;
 	}
 
@@ -156,8 +156,7 @@ int chatbot_do_exit(int inc, char *inv[], char *response, int n) {
 int chatbot_is_load(const char *intent) {
 	
 	/* to be implemented */
-	
-	return 0;
+	return compare_token(intent, "load") == 0;
 	
 }
 
@@ -174,8 +173,25 @@ int chatbot_is_load(const char *intent) {
 int chatbot_do_load(int inc, char *inv[], char *response, int n) {
 	
 	/* to be implemented */
-	 
-	return 0;
+	FILE* fp;
+	if (inv[1] == NULL) {
+		snprintf(response, n, "Invalid is EMPTY string");
+		return 0;
+	}
+	else {
+		//char *filename = "C:\\Users\\Unknown51\\Desktop\\ICT 1002\\ICT1002_Group Project Assignment_AY2019_T1_Skeleton\\ICT1002_Group Project Assignment_AY2019_T1_Skeleton\\base.txt";
+		fp = fopen(inv[1], "r");
+		//fp = fopen(filename, "r");
+		if (fp == NULL) { 
+			snprintf(response, n, "file not found"); 
+		}
+		else {
+			int count = knowledge_read(fp);
+			snprintf(response, n, "read %d response from %s", count, inv[1]);
+			fclose(fp);
+		}
+		return 0;
+	}
 	 
 }
 
@@ -193,9 +209,7 @@ int chatbot_do_load(int inc, char *inv[], char *response, int n) {
 int chatbot_is_question(const char *intent) {
 	
 	/* to be implemented */
-	
-	return compare_token(intent, "who") == 0 || compare_token(intent, "where") == 0 || compare_token(intent, "what") == 0;
-	
+	return compare_token(intent, "what") == 0 || compare_token(intent, "where") == 0 || compare_token(intent, "who") == 0;	
 }
 
 
@@ -215,11 +229,118 @@ int chatbot_is_question(const char *intent) {
 int chatbot_do_question(int inc, char *inv[], char *response, int n) {
 	
 	/* to be implemented */
-	snprintf(response, n, "WOT WOT WOT");
-	return 0;
-	 
-}
+// check if number of words greater than 1
+	if (inc > 1) 
+	{
+		char tempbuf[MAX_INPUT];
+		// check if the intent is what/where/who
+		if (compare_token(inv[0], "what") == 0 || compare_token(inv[0], "where") == 0 || compare_token(inv[0], "who") == 0)
+		{
+			// check if the 2nd space is is/are
+			if (compare_token(inv[1], "is") == 0 || compare_token(inv[1], "are") == 0)
+			{
+				// take inputs after is/are as entities
+				char catbuf[MAX_INPUT] = "";
 
+				for (int i = 2; i < inc; i++)
+				{
+					if (strcmp(catbuf, "") == 0)
+					{
+						strcpy(catbuf, inv[i]);
+					}
+					else
+					{
+						sprintf(catbuf, "%s %s", catbuf, inv[i]);
+					}
+				}
+
+				// check for entity in linked list
+				if (knowledge_get(inv[0], catbuf, response, n) == KB_OK)
+				{
+					printresponse(inv[0], catbuf, response, n);
+				}
+
+				else if (knowledge_get(inv[0], catbuf, response, n) == KB_NOTFOUND)
+				{
+					printf("%s: I dont know %s. %s is %s?\n", chatbot_botname(), catbuf, inv[0], catbuf);
+					printf("%s:", chatbot_username());
+					fgets(tempbuf, n, stdin);
+
+					//check if the user pressed enter instead of replying a answer
+					if (tempbuf[0] == '\n' || tempbuf[0] == ' ')
+					{
+
+						snprintf(response, n, "I do not understand your answer. Please try again!");
+						return 0;
+					}
+					else
+					{
+						snprintf(response, n, "Thank you");
+						return (knowledge_put(inv[0], catbuf, tempbuf));
+					}
+
+				}
+
+				else if (knowledge_get(inv[0], catbuf, response, n) == KB_INVALID)
+				{
+					snprintf(response, n, "I dont see a question. Please ask again");
+
+					return 0;
+				}
+			}
+
+			// check if the the 2nd position does not have is/are
+			else if (compare_token(inv[1], "is") != 0 || compare_token(inv[1], "are") != 0)
+			{
+				// take inputs after intent as entities
+				char catbuf[MAX_INPUT] = "";
+				for (int i = 1; i < inc; i++)
+				{
+					if (strcmp(catbuf, "") == 0)
+					{
+						strcpy(catbuf, inv[i]);
+					}
+					else
+					{
+						sprintf(catbuf, "%s %s", catbuf, inv[i]);
+					}
+				}
+				// check for entity in linked list
+				if (knowledge_get(inv[0], catbuf, response, n) == KB_OK)
+				{
+					printresponse(inv[0], catbuf, response, n);
+				}
+				else if (knowledge_get(inv[0], catbuf, response, n) == KB_NOTFOUND)
+				{
+					printf("%s: I dont know %s. %s is %s?\n", chatbot_botname(), catbuf, inv[0], catbuf);
+					printf("%s:", chatbot_username());
+					fgets(tempbuf, n, stdin);
+
+					if (tempbuf[0] == '\n')
+					{
+						snprintf(response, n, "Please teach me something");
+						return 0;
+					}
+					else
+					{
+						snprintf(response, n, "Thank you");
+						return (knowledge_put(inv[0], catbuf, tempbuf));
+					}
+				}
+				else if (knowledge_get(inv[0], catbuf, response, n) == KB_INVALID)
+				{
+					snprintf(response, n, "I dont see a question. Please ask again");
+					return 0;
+				}
+			}
+		}
+	}
+	else
+	{
+		snprintf(response, n, "I do not understand your question");
+	}
+	return 0;
+}
 
 /*
  * Determine whether an intent is RESET.
@@ -234,8 +355,7 @@ int chatbot_do_question(int inc, char *inv[], char *response, int n) {
 int chatbot_is_reset(const char *intent) {
 	
 	/* to be implemented */
-	
-	return 0;
+	return compare_token(intent, "reset") == 0;
 	
 }
 
@@ -252,7 +372,8 @@ int chatbot_is_reset(const char *intent) {
 int chatbot_do_reset(int inc, char *inv[], char *response, int n) {
 	
 	/* to be implemented */
-	 
+	knowledge_reset();
+	snprintf(response, n, "Knowledge's base has been reset");
 	return 0;
 	 
 }
@@ -271,9 +392,7 @@ int chatbot_do_reset(int inc, char *inv[], char *response, int n) {
 int chatbot_is_save(const char *intent) {
 	
 	/* to be implemented */
-	
-	return 0;
-	
+	return compare_token(intent, "save") == 0;
 }
 
 
@@ -289,7 +408,22 @@ int chatbot_is_save(const char *intent) {
 int chatbot_do_save(int inc, char *inv[], char *response, int n) {
 	
 	/* to be implemented */
-	
+	int i = 1;
+	FILE* fp;
+	if (inv[1] == NULL) {
+		snprintf(response, n, "enter in this order: save filename/path");
+		return 0;
+	}
+	else {
+		//checks if its save to if it is move the inv up by 1
+		if (compare_token(inv[1], "to") == 0) { i++; }
+		fp = fopen(inv[i], "w+");
+		if (fp == NULL) { snprintf(response, n, "error when creating file"); }
+		else {
+			knowledge_write(fp);
+			snprintf(response, n, "My knowledge has been saved to %s", inv[i]);
+		}
+	}
 	return 0;
 	 
 }
@@ -309,10 +443,10 @@ int chatbot_do_save(int inc, char *inv[], char *response, int n) {
 int chatbot_is_smalltalk(const char *intent) {
 	
 	/* to be implemented */
-	//return compare_token(intent, "goodbye") == 0;
-	return compare_token(intent, "hi") == 0 || compare_token(intent, "hello") == 0 || compare_token(intent, "joke") == 0 || compare_token(intent, "food") == 0 || compare_token(intent, "goodbye") == 0;
+	return compare_token(intent, "joke") == 0 || compare_token(intent, "hi") == 0 || compare_token(intent, "hello") == 0
+		|| compare_token(intent, "cat") == 0 || compare_token(intent, "marco") == 0;
  
-}
+}	
 
 
 /*
@@ -326,29 +460,40 @@ int chatbot_is_smalltalk(const char *intent) {
  *   1, if the chatbot should stop chatting (e.g. the smalltalk was "goodbye" etc.)
  */
 int chatbot_do_smalltalk(int inc, char *inv[], char *response, int n) {
-	//entering smalltalk for the first time leads to weird text. second time and onwards, smalltalk is ignored, and the previous input is recognized instead
-	//hardcoded implementation
-
-	//if (inv[0] == "hi")
-		//snprintf(response, 5, "Hello");
-	if ((compare_token(inv[0], "goodbye")) == 0)		//works better than inv[0] == "goodbye"
+	
+	/* to be implemented */
+	
+	if (compare_token(inv[0], "joke") == 0 )
 	{
-		snprintf(response, n, "Goodbye!");
-		return 1;	
+		snprintf(response, n, "You!");
+		return 0;
 	}
 
-	else if ((compare_token(inv[0], "hi")) == 0)
-		snprintf(response, n, "Hello!");
-	else if ((compare_token(inv[0], "joke")) == 0)
-		snprintf(response, n, "hhahHAhahAHAHaha");
-	else if ((compare_token(inv[0], "hello")) == 0)
-		snprintf(response, n, "Hi!");
-	else if ((compare_token(inv[0], "food")) == 0)
-		snprintf(response, n, "Fries");
-		
+	if (compare_token(inv[0], "hello") == 0 || compare_token(inv[0], "hi") == 0)
+	{
+		snprintf(response, n, "Hello!");	
+		return 0;
+	}
+
+	if (compare_token(inv[0], "cat") == 0)
+	{
+		snprintf(response, n, "meow!");
+		return 0;
+	}
+
+	if (compare_token(inv[0], "marco") == 0)
+	{
+		snprintf(response, n, "polo");
+		return 0;
+	}
+
+	else
+	{
+		snprintf(response, n, "hoho i dont get it");
+		return 0;
+	}
+
 	return 0;
-	//all above code can activte, yet program still ignores everything and says it "don't understand"
-		
 	
 }
   
