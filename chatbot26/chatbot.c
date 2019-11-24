@@ -405,27 +405,28 @@ int chatbot_is_save(const char *intent) {
  * Returns:
  *   0 (the chatbot always continues chatting after saving knowledge)
  */
-int chatbot_do_save(int inc, char *inv[], char *response, int n) {
-	
+int chatbot_do_save(int inc, char* inv[], char* response, int n) {
+
 	/* to be implemented */
 	int i = 1;
 	FILE* fp;
 	if (inv[1] == NULL) {
-		snprintf(response, n, "enter in this order: save filename/path");
+		snprintf(response, n, "enter in this order: save <filename>");
 		return 0;
 	}
 	else {
 		//checks if its save to if it is move the inv up by 1
 		if (compare_token(inv[1], "to") == 0) { i++; }
 		fp = fopen(inv[i], "w+");
-		if (fp == NULL) { snprintf(response, n, "error when creating file"); }
+		if (fp == NULL) { snprintf(response, n, "error in creating file"); }
 		else {
 			knowledge_write(fp);
 			snprintf(response, n, "My knowledge has been saved to %s", inv[i]);
 		}
+		fclose(fp);
 	}
 	return 0;
-	 
+
 }
  
  

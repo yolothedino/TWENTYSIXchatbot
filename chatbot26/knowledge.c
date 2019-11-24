@@ -7,11 +7,12 @@
  * knowledge_put() inserts a new response to a question.
  * knowledge_read() reads the knowledge base from a file.
  * knowledge_reset() erases all of the knowledge.
- * kowledge_write() saves the knowledge base in a file.
+ * knowledge_write() saves the knowledge base in a file.
  *
  * You may add helper functions as necessary.
  */
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -530,7 +531,103 @@ void knowledge_reset() {
  *   f - the file
  */
 void knowledge_write(FILE *f) {
+	item* tmp = NULL;
+
+	// Save under [when]
+	if (whenheader != NULL) {
+		tmp = whenheader;
+		fwrite("[when]\n", 7, 1, f);
+		fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+		fwrite("=", 1, 1, f);
+		fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+		while (tmp->next != NULL) {
+			tmp = tmp->next;
+			fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+			fwrite("=", 1, 1, f);
+			fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+		}
+		fwrite("\n", 1, 1, f);
+	}
 	
-	/* to be implemented */
-	
+	// Save under [where]
+	if (whereheader != NULL) {
+		tmp = whereheader;
+		fwrite("[where]\n", 8, 1, f);
+		fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+		fwrite("=", 1, 1, f);
+		fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+		while (tmp->next != NULL) {
+			tmp = tmp->next;
+			fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+			fwrite("=", 1, 1, f);
+			fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+		}
+		fwrite("\n", 1, 1, f);
+	}
+
+	// Save under [who]
+	if (whoheader != NULL) {
+		tmp = whoheader;
+		fwrite("[who]\n", 6, 1, f);
+		fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+		fwrite("=", 1, 1, f);
+		fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+		while (tmp->next != NULL) {
+			tmp = tmp->next;
+			fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+			fwrite("=", 1, 1, f);
+			fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+			printf("PRINTED PRINTED PRINTED");
+		}
+		fwrite("\n", 1, 1, f);
+	}
+
+	// Save under [what]
+	if (whatheader != NULL) {
+		tmp = whatheader;
+		fwrite("[what]\n", 7, 1, f);
+		fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+		fwrite("=", 1, 1, f);
+		fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+		while (tmp->next != NULL) {
+			tmp = tmp->next;
+			fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+			fwrite("=", 1, 1, f);
+			fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+		}
+		fwrite("\n", 1, 1, f);
+	}
+
+	// Save under [why]
+	if (whyheader != NULL) {
+		tmp = whyheader;
+		fwrite("[why]\n", 6, 1, f);
+		fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+		fwrite("=", 1, 1, f);
+		fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+		while (tmp->next != NULL) {
+			tmp = tmp->next;
+			fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+			fwrite("=", 1, 1, f);
+			fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+		}
+		fwrite("\n", 1, 1, f);
+	}
+
+	// Save under [how]
+	if (howheader != NULL) {
+		tmp = howheader;
+		fwrite("[how]\n", 6, 1, f);
+		fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+		fwrite("=", 1, 1, f);
+		fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+		while (tmp->next != NULL) {
+			tmp = tmp->next;
+			fwrite(tmp->entity, sizeof(char) * strlen(tmp->entity), 1, f);
+			fwrite("=", 1, 1, f);
+			fwrite(tmp->response, sizeof(char) * strlen(tmp->response), 1, f);
+		}
+		fwrite("\n", 1, 1, f);
+	}
+
 }
