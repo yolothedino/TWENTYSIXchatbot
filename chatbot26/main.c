@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 	chatbot_do_reset(1, inv, output, MAX_RESPONSE);
 	
 	/* print a welcome message */
-	printf("%s: Hello, I'm %s.\n", chatbot_botname(), chatbot_botname());
+	printf("%s: Hello, I'm %s. Enter \"help\" for the list of available commands.\n", chatbot_botname(), chatbot_botname());
 	
 	/* main command loop */
 	do {
@@ -67,7 +67,8 @@ int main(int argc, char *argv[]) {
 		
 		/* invoke the chatbot */
 		done = chatbot_main(inc, inv, output, MAX_RESPONSE);		//chatbot_main returns 0 if program still running, 1 if exit
-		printf("|=MAINCHATBOTFILE=| %s: %s\n", chatbot_botname(), output);	//JACK CODE - |=MAINCHATBOTFILE=| is for testing
+		//printf("|=MAINCHATBOTFILE=| %s: %s\n", chatbot_botname(), output);	//JACK CODE - |=MAINCHATBOTFILE=| is for testing
+		printf("%s: %s\n", chatbot_botname(), output);	//JACK CODE - |=MAINCHATBOTFILE=| is for testing
 		
 	} while (!done);
 	

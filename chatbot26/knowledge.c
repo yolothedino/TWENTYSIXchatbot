@@ -457,6 +457,17 @@ int knowledge_put(const char *intent, const char *entity, const char *response) 
 int knowledge_read(FILE* f) {
 
 	/* to be implemented */
+	printf("READREAD");
+
+	//read every line
+		//if line has [what]
+			//add knowledge to what
+		//if line has [where]
+			//add knowledge to where
+		//if line has [who]
+			//add knowledge to who
+
+
 }
 		
 /*
@@ -484,6 +495,8 @@ void knowledge_reset() {
 		}
 	}
 	*/
+
+
 	
 	while (whenheader != NULL)
 	{

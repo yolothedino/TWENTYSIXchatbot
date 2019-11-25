@@ -90,6 +90,8 @@ int chatbot_main(int inc, char *inv[], char *response, int n) {
 	/* look for an intent and invoke the corresponding do_* function */
 	if (chatbot_is_exit(inv[0]))
 		return chatbot_do_exit(inc, inv, response, n);
+	else if (chatbot_is_help(inv[0]))
+		return chatbot_do_help(inc, inv, response, n);
 	else if (chatbot_is_smalltalk(inv[0]))
 		return chatbot_do_smalltalk(inc, inv, response, n);
 	else if (chatbot_is_load(inv[0]))
@@ -175,7 +177,7 @@ int chatbot_do_load(int inc, char *inv[], char *response, int n) {
 	/* to be implemented */
 	FILE* fp;
 	if (inv[1] == NULL) {
-		snprintf(response, n, "Invalid is EMPTY string");
+		snprintf(response, n, "Invalid - Please enter in the format of \"load <filename.ini>\"");
 		return 0;
 	}
 	else {
@@ -183,7 +185,7 @@ int chatbot_do_load(int inc, char *inv[], char *response, int n) {
 		fp = fopen(inv[1], "r");
 		//fp = fopen(filename, "r");
 		if (fp == NULL) { 
-			snprintf(response, n, "file not found"); 
+			snprintf(response, n, "file not found. Be sure to enter .ini after the filename."); 
 		}
 		else {
 			int count = knowledge_read(fp);
@@ -264,7 +266,7 @@ int chatbot_do_question(int inc, char *inv[], char *response, int n) {
 				{
 					printf("%s: I dont know %s. %s is %s?\n", chatbot_botname(), catbuf, inv[0], catbuf);
 					printf("%s:", chatbot_username());
-					fgets(tempbuf, n, stdin);
+					fgets(tempbuf, n, stdin);	//tempbuf = the answer to the question. supplied by the user
 
 					//check if the user pressed enter instead of replying a answer
 					if (tempbuf[0] == '\n' || tempbuf[0] == ' ')
@@ -411,17 +413,17 @@ int chatbot_do_save(int inc, char* inv[], char* response, int n) {
 	int i = 1;
 	FILE* fp;
 	if (inv[1] == NULL) {
-		snprintf(response, n, "enter in this order: save <filename>");
+		snprintf(response, n, "Invalid - Please enter in the format of \"save <filename.ini>\"");
 		return 0;
 	}
 	else {
 		//checks if its save to if it is move the inv up by 1
 		if (compare_token(inv[1], "to") == 0) { i++; }
 		fp = fopen(inv[i], "w+");
-		if (fp == NULL) { snprintf(response, n, "error in creating file"); }
+		if (fp == NULL) { snprintf(response, n, "file not found. Be sure to enter .ini after the filename."); }
 		else {
 			knowledge_write(fp);
-			snprintf(response, n, "My knowledge has been saved to %s", inv[i]);
+			snprintf(response, n, "My knowledge has been saved to %s.", inv[i]);
 		}
 		fclose(fp);
 	}
@@ -466,7 +468,7 @@ int chatbot_do_smalltalk(int inc, char *inv[], char *response, int n) {
 	
 	if (compare_token(inv[0], "joke") == 0 )
 	{
-		snprintf(response, n, "You!");
+		snprintf(response, n, "This is the best joke I know.\nJimmy: Dad, I'm hungry. \nDad: Hi hungry, I'm Dad.");
 		return 0;
 	}
 
@@ -498,3 +500,48 @@ int chatbot_do_smalltalk(int inc, char *inv[], char *response, int n) {
 	
 }
   
+
+/*
+ * ADDITIONAL FUNCTION
+ * let's users access the list of basic commands by typing 'help'
+ * determines if the intent is 'help'
+ */
+int chatbot_is_help(const char* intent) {
+
+	/* to be implemented */
+	return compare_token(intent, "help") == 0;
+
+}
+
+
+/*
+ * ADDITIONAL FUNCTION
+ * Respond to 'help'
+ *
+ * displays list of commands (with the exception of smalltalk)
+ */
+int chatbot_do_help(int inc, char* inv[], char* response, int n) {
+
+	/* to be implemented */
+
+	if (compare_token(inv[0], "help") == 0)
+	{
+		printf("Chatbot: This is the list of available commands and their functionalities.\n");
+		printf("===============================================================================\n");
+		printf("\"exit\" - Exit the program.\n");
+		printf("\"what/who/where <query>\" - Ask the chatbot a what/who/where question.\n");
+		printf("\"load\" - Load knowledge to the bot from an ini file.\n");
+		printf("\"save\" - Save a bot's current knowledge to an ini file.\n");
+		printf("\"reset\" - Resets a bot's current knowledge.\n");
+		printf("===============================================================================\n");
+		//more if needed
+
+		snprintf(response, n, "How may I help you?");
+		
+		return 0;
+	}
+
+
+	return 0;
+
+}
