@@ -257,18 +257,22 @@ int chatbot_do_question(int inc, char *inv[], char *response, int n) {
 				}
 
 				// check for entity in linked list
+				//if 'knowledge' is already inside, print the knowledge
 				if (knowledge_get(inv[0], catbuf, response, n) == KB_OK)
 				{
-					printresponse(inv[0], catbuf, response, n);
+					printresponse(inv[0], catbuf, response, n);	
 				}
 
+				//knowledge not inside - i.e bot is dumb
+				//make bot slightly less dumb by having it ask for the answer
 				else if (knowledge_get(inv[0], catbuf, response, n) == KB_NOTFOUND)
 				{
 					printf("%s: I dont know %s. %s is %s?\n", chatbot_botname(), catbuf, inv[0], catbuf);
 					printf("%s:", chatbot_username());
 					fgets(tempbuf, n, stdin);	//tempbuf = the answer to the question. supplied by the user
 
-					//check if the user pressed enter instead of replying a answer
+					//check if the user pressed enter instead of entering an answer
+					//effectively, there is no answer.
 					if (tempbuf[0] == '\n' || tempbuf[0] == ' ')
 					{
 
