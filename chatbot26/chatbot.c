@@ -43,8 +43,32 @@
 #include <stdio.h>
 #include <string.h>
 #include "chat1002.h"
- 
- 
+#include <curl/curl.h>		//may show error, but doesn't matter
+#include <ctype.h>>
+
+
+
+char botName[20] = DEFAULT_BOT_NAME;	//fixed at 20. can be changed by the user during runtime/knowledge loading.
+
+ /*Weather stuff*/
+struct FtpFile {
+	const char* filename;
+	FILE* stream;
+};
+
+/*Weather stuff*/
+static size_t my_fwrite(void* buffer, size_t size, size_t nmemb, void* stream)
+{
+	struct FtpFile* out = (struct FtpFile*)stream;
+	if (!out->stream) {
+		/* open file for writing */
+		out->stream = fopen(out->filename, "wb");
+		if (!out->stream)
+			return -1; /* failure, can't open file to write */
+	}
+	return fwrite(buffer, size, nmemb, out->stream);
+}
+
 /*
  * Get the name of the chatbot.
  *
@@ -52,7 +76,7 @@
  */
 const char *chatbot_botname() {
 
-	return "Chatbot";
+	return botName;
 	
 }
 
@@ -104,6 +128,12 @@ int chatbot_main(int inc, char *inv[], char *response, int n) {
 		return chatbot_do_save(inc, inv, response, n);
 	else if (chatbot_is_open(inv[0]))
 		return chatbot_do_open(inc, inv, response, n);
+	else if (chatbot_is_weather(inv[0]))
+		return chatbot_do_weather(inc, inv, response, n);
+	else if (chatbot_is_name(inv[0]))
+		return chatbot_do_name(inc, inv, response, n);
+	else if (chatbot_is_forget(inv[0]))
+		return chatbot_do_forget(inc, inv, response, n);
 	else {
 		snprintf(response, n, "I don't understand \"%s\".", inv[0]);
 		return 0;
@@ -183,15 +213,13 @@ int chatbot_do_load(int inc, char *inv[], char *response, int n) {
 		return 0;
 	}
 	else {
-		//char *filename = "C:\\Users\\Unknown51\\Desktop\\ICT 1002\\ICT1002_Group Project Assignment_AY2019_T1_Skeleton\\ICT1002_Group Project Assignment_AY2019_T1_Skeleton\\base.txt";
 		fp = fopen(inv[1], "r");
-		//fp = fopen(filename, "r");
 		if (fp == NULL) { 
-			snprintf(response, n, "file not found. Be sure to enter .ini after the filename."); 
+			snprintf(response, n, "Filename \"%s\" not found. Be sure to enter .ini after the file's name. e.g \"MyFileName.ini\".", inv[1]); 
 		}
 		else {
-			int count = knowledge_read(fp);
-			snprintf(response, n, "read %d response from %s", count, inv[1]);
+			int count = knowledge_read(fp, botName);
+			snprintf(response, n, "read total %d knowledge lines from %s", count, inv[1]);
 			fclose(fp);
 		}
 		return 0;
@@ -232,18 +260,17 @@ int chatbot_is_question(const char *intent) {
  */
 int chatbot_do_question(int inc, char *inv[], char *response, int n) {
 	
-	/* to be implemented */
-// check if number of words greater than 1
+	// check if number of words greater than 1
 	if (inc > 1) 
 	{
 		char tempbuf[MAX_INPUT];
 		// check if the intent is what/where/who
 		if (compare_token(inv[0], "what") == 0 || compare_token(inv[0], "where") == 0 || compare_token(inv[0], "who") == 0)
 		{
-			// check if the 2nd space is is/are
+			// check if the 2nd word is is/are
 			if (compare_token(inv[1], "is") == 0 || compare_token(inv[1], "are") == 0)
 			{
-				// take inputs after is/are as entities
+				// accounting for is/are, take inputs after those 2 words as entities
 				char catbuf[MAX_INPUT] = "";
 
 				for (int i = 2; i < inc; i++)
@@ -297,7 +324,7 @@ int chatbot_do_question(int inc, char *inv[], char *response, int n) {
 				}
 			}
 
-			// check if the the 2nd position does not have is/are
+			// for cases when there is not is/are
 			else if (compare_token(inv[1], "is") != 0 || compare_token(inv[1], "are") != 0)
 			{
 				// take inputs after intent as entities
@@ -361,8 +388,7 @@ int chatbot_do_question(int inc, char *inv[], char *response, int n) {
  *  0, otherwise
  */
 int chatbot_is_reset(const char *intent) {
-	
-	/* to be implemented */
+
 	return compare_token(intent, "reset") == 0;
 	
 }
@@ -379,8 +405,11 @@ int chatbot_is_reset(const char *intent) {
  */
 int chatbot_do_reset(int inc, char *inv[], char *response, int n) {
 	
-	/* to be implemented */
-	knowledge_reset();
+	for (int i = 0; i < 10; i++)			//sets every character to null
+		botName[i] = '\0';
+
+	strcpy(botName, DEFAULT_BOT_NAME);		//resets to default name
+	knowledge_reset();				
 	snprintf(response, n, "Knowledge's base has been reset");
 	return 0;
 	 
@@ -426,8 +455,13 @@ int chatbot_do_save(int inc, char* inv[], char* response, int n) {
 		//checks if its save to if it is move the inv up by 1
 		if (compare_token(inv[1], "to") == 0) { i++; }
 		fp = fopen(inv[i], "w+");
-		if (fp == NULL) { snprintf(response, n, "file not found. Be sure to enter .ini after the filename."); }
+		if (fp == NULL)
+			snprintf(response, n, "Filename \"%s\" not found. Be sure to enter .ini after the file's name. e.g \"MyFileName.ini\".", inv[1]);
 		else {
+			fwrite("[NAME]\n", 7, 1, fp);
+			fwrite("name=", 5, 1, fp);
+			fwrite(botName, 10, 1, fp);
+			fwrite("\n\n", 2, 1, fp);
 			knowledge_write(fp);
 			snprintf(response, n, "My knowledge has been saved to %s.", inv[i]);
 		}
@@ -453,7 +487,7 @@ int chatbot_is_smalltalk(const char *intent) {
 	
 	/* to be implemented */
 	return compare_token(intent, "joke") == 0 || compare_token(intent, "hi") == 0 || compare_token(intent, "hello") == 0
-		|| compare_token(intent, "cat") == 0 || compare_token(intent, "marco") == 0;
+		|| compare_token(intent, "cat") == 0 || compare_token(intent, "marco") == 0 || compare_token(intent, "dadjoke") == 0;
  
 }	
 
@@ -473,6 +507,12 @@ int chatbot_do_smalltalk(int inc, char *inv[], char *response, int n) {
 	/* to be implemented */
 	
 	if (compare_token(inv[0], "joke") == 0 )
+	{
+		snprintf(response, n, "This is the one joke I know.\nWhat has four legs and can fly?\nTwo birds.");
+		return 0;
+	}
+
+	if (compare_token(inv[0], "dadjoke") == 0)
 	{
 		snprintf(response, n, "This is the best joke I know.\nJimmy: Dad, I'm hungry. \nDad: Hi hungry, I'm Dad.");
 		return 0;
@@ -532,22 +572,24 @@ int chatbot_do_help(int inc, char* inv[], char* response, int n) {
 
 	if (compare_token(inv[0], "help") == 0)
 	{
-		printf("Chatbot: This is the list of available commands and their functionalities.\n");
+		printf("%s: This is the list of available commands and their functionalities.\n", botName);
 		printf("===============================================================================\n");
-		printf("\"exit\" - Exit the program.\n");
-		printf("\"what/who/where <query>\" - Ask the chatbot a what/who/where question.\n");
-		printf("\"load <filename.ini>\" - Load knowledge to the bot from an ini file. This adds on current existing knowledge.\n");
-		printf("\"save <filename.ini>\" - Save a chatbot's current knowledge to an ini file.\n");
-		printf("\"reset\" - Resets a bot's current knowledge.\n");
+		printf("\"exit/quit\" - Exit the program.\n");
+		printf("\"what/who/where <entity>\" - Ask the chatbot a what/who/where question.\n");
+		printf("\"load <filename>.ini\" - Load knowledge to the bot from an ini file. This adds on current existing knowledge.\n");
+		printf("\"save <filename>.ini\" - Save a chatbot's current knowledge to an ini file.\n");
+		printf("\"reset\" - Resets a bot's current knowledge and name.\n");
 		printf("=================================OTHER FUNCTIONS===============================\n");
 		printf("\"name <newname>\" - Change the chatbot's name.\n");
 		printf("\"open\" - Prints out chatbot's current knowledge\n");
+		printf("\"forget <intent> <entity>\" - Remove a certain line of the chatbot's knowledge.\n");
+		printf("==================================SMALLTALK====================================\n");
+		printf("\"hi\" \"hello\" \"cat\" \"joke\" \"dadjoke\" \"marco\" \n");
 		printf("===============================================================================\n");
-		//more if needed
+
 
 		snprintf(response, n, "How may I help you?");
-		
-		return 0;
+
 	}
 
 
@@ -578,6 +620,210 @@ int chatbot_do_open(int inc, char* inv[], char* response, int n) {
 		snprintf(response, n, "Chatbot knowledge printed.");
 	else
 		snprintf(response, n, "Chatbot has no knowledge to show.");
+	return 0;
+
+}
+
+/*
+ * ADDITIONAL FUNCTION
+ * let's users retrieve weather info
+ * determines if the intent is 'weather'
+ */
+int chatbot_is_weather(const char* intent) {
+
+	return compare_token(intent, "weather") == 0;
+}
+
+/*
+ * ADDITIONAL FUNCTION
+ * retrieves and display weather inforamtion of a specific placae determined by user.
+ */
+int chatbot_do_weather(int inc, char* inv[], char* response, int n) {
+
+	if (inv[1] == NULL)
+	{
+		snprintf(response, n, "Invalid - Please enter in the format of \"weather singapore\"");
+	}
+	else
+	{
+		int fail = 0;
+		CURL* curl;
+		CURLcode res;
+		struct FtpFile ftpfile = {
+		  "weather.txt", /* name to store the file as if successful. located in the folder chatbot26 */
+		  NULL
+		};
+
+		curl_global_init(CURL_GLOBAL_DEFAULT);
+
+		curl = curl_easy_init();
+		if (curl) {
+			char* city = inv[1];
+			char* url = "http://api.openweathermap.org/data/2.5/weather?q=%s\&units=metric&APPID=eb229983d1ff9edbcb657773a8a06001";
+			char result[200];
+			sprintf(result, url, city);
+
+			curl_easy_setopt(curl, CURLOPT_URL, result);
+			/* Define our callback to get called when there's data to be written */
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_fwrite);
+			/* Set a pointer to our struct to pass to the callback */
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ftpfile);
+
+			/* Switch on full protocol/debug output */
+			//curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
+			res = curl_easy_perform(curl);
+
+			/* always cleanup */
+			curl_easy_cleanup(curl);
+
+			if (CURLE_OK != res) {
+				/* we failed */
+				fail = 1;
+				//fprintf(stderr, "curl told us %d\n", res);
+			}
+			else
+			{
+				fail = 0;
+			}
+		}
+
+		if (ftpfile.stream)
+			fclose(ftpfile.stream); /* close the local file */
+
+		curl_global_cleanup();
+
+		if (fail == 0)
+		{
+			FILE* file;
+			int c;
+			int ischar = 0;
+			/*open the file with fopen()*/
+			file = fopen("weather.txt", "r");
+			if (file == NULL)
+			{
+				snprintf(response, n, "Could not open weather.txt.\n");
+				return 1;
+			}
+			else
+			{
+				while ((c = getc(file)) != EOF)
+				{
+					if (isalnum(c))
+					{
+						ischar = 1;
+						printf("%c", c);
+					}
+					else if (c == '.' || c == ':' || c == ' ' || c == '_')
+					{
+						printf("%c", c);
+					}
+					else if ((ischar == 1) & (c == '"'))
+					{
+
+					}
+					else if (ischar == 1)
+					{
+						ischar = 0;
+						printf("\n");
+					}
+				}
+				fclose(file);
+			}
+		}
+		else
+		{
+			snprintf(response, n, "Please check internet connection and try again.\n");
+		}
+	}
+	return 0;
+}
+
+/*
+ * ADDITIONAL FUNCTION
+ * let's users change the bot's name
+ * determines if the intent is 'name'
+ */
+int chatbot_is_name(const char* intent) {
+
+	return compare_token(intent, "name") == 0;
+
+}
+
+/*
+ * ADDITIONAL FUNCTION
+ * Respond to 'help'
+ *
+ * displays list of commands (with the exception of smalltalk)
+ */
+int chatbot_do_name(int inc, char* inv[], char* response, int n) {
+
+
+	if (inv[1] == NULL)//if (inc < 2)
+	{
+		snprintf(response, n, "Please enter a name in the format of \"name <newName>\". Whitespaces are not accepted");
+		return 0;
+	}
+
+	else if (strlen(inv[1]) > 20)		//check if name is within acceptable size (of 20)
+	{
+		snprintf(response, n, "Name must not exceed 20 characters");
+		return 0;					//shuts it down since large names are a no-go
+	}
+
+	//inv[1]
+	for (int i = 0; i < 10; i++)	//sets every character to null before replacing w/ new name.
+		botName[i] = '\0';
+
+	strcpy(botName, inv[1]);
+
+	snprintf(response, n, "My name has been changed. Hi, how may I help you?");
+
+	return 0;
+
+}
+
+/*
+ * ADDITIONAL FUNCTION
+ * let's users change the bot's name
+ * determines if the intent is 'name'
+ */
+int chatbot_is_forget(const char* intent) {
+
+	return compare_token(intent, "forget") == 0;
+
+}
+
+/*
+ * ADDITIONAL FUNCTION
+ * Respond to 'forget'
+ *
+ * displays list of commands (with the exception of smalltalk)
+ */
+int chatbot_do_forget(int inc, char* inv[], char* response, int n) {
+
+	int forgetResult = -1;
+
+	if (inv[1] == NULL)//nothing else other than 'forget' is entered
+	{
+		snprintf(response, n, "Please enter something for me to forget. E.g \"what bob\"");
+		return 0;
+	}
+
+	char catbuf[MAX_INPUT] = "";
+	for (int i = 1; i < inc; i++)
+	{
+		if (strcmp(catbuf, "") == 0)
+			strcpy(catbuf, inv[i]);
+		else
+			sprintf(catbuf, "%s %s", catbuf, inv[i]);
+	}
+
+	if (knowledge_forget(catbuf) == 1)		//successfully forgot something
+		snprintf(response, n, "I forgot something. Hi, how may I help you?");
+	else									//entered phrase did not exist in linked lists. 
+		snprintf(response, n, "There is nothing to forget. Remember to enter in the format of e.g \"forget what bob\". How may I help you?");
+
 	return 0;
 
 }

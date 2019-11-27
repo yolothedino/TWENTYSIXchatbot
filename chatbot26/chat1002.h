@@ -27,6 +27,9 @@
 #define KB_NOTFOUND -1
 #define KB_INVALID  -2
 #define KB_NOMEM    -3
+
+/* default name of the bot. upon initialization or reset the chatbot's name will always be this. */
+#define DEFAULT_BOT_NAME	"ChatBotto"
  
 /* functions defined in main.c */
 int compare_token(const char *token1, const char *token2);
@@ -53,13 +56,20 @@ int chatbot_is_help(const char* intent);
 int chatbot_do_help(int inc, char* inv[], char* response, int n);
 int chatbot_is_open(const char* intent);
 int chatbot_do_open(int inc, char* inv[], char* response, int n);
+int chatbot_is_weather(const char* intent);
+int chatbot_do_weather(int inc, char* inv[], char* response, int n);
+int chatbot_is_name(const char* intent);
+int chatbot_do_name(int inc, char* inv[], char* response, int n);
+int chatbot_is_forget(const char* intent);
+int chatbot_do_forget(int inc, char* inv[], char* response, int n);
 
 /* functions defined in knowledge.c */
 int knowledge_get(const char *intent, const char *entity, char *response, int n);
 int knowledge_put(const char *intent, const char *entity, const char *response);
 void knowledge_reset();
-int knowledge_read(FILE *f);
+int knowledge_read(FILE *f, char* botName);
 void knowledge_write(FILE *f);
 int knowledge_open();
+int knowledge_forget(char* str);
 
 #endif
