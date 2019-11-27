@@ -102,6 +102,8 @@ int chatbot_main(int inc, char *inv[], char *response, int n) {
 		return chatbot_do_reset(inc, inv, response, n);
 	else if (chatbot_is_save(inv[0]))
 		return chatbot_do_save(inc, inv, response, n);
+	else if (chatbot_is_open(inv[0]))
+		return chatbot_do_open(inc, inv, response, n);
 	else {
 		snprintf(response, n, "I don't understand \"%s\".", inv[0]);
 		return 0;
@@ -496,7 +498,7 @@ int chatbot_do_smalltalk(int inc, char *inv[], char *response, int n) {
 
 	else
 	{
-		snprintf(response, n, "hoho i dont get it");
+		snprintf(response, n, "hoho i dont get it");	//will never happen (probably?)
 		return 0;
 	}
 
@@ -539,6 +541,7 @@ int chatbot_do_help(int inc, char* inv[], char* response, int n) {
 		printf("\"reset\" - Resets a bot's current knowledge.\n");
 		printf("=================================OTHER FUNCTIONS===============================\n");
 		printf("\"name <newname>\" - Change the chatbot's name.\n");
+		printf("\"open\" - Prints out chatbot's current knowledge\n");
 		printf("===============================================================================\n");
 		//more if needed
 
@@ -548,6 +551,33 @@ int chatbot_do_help(int inc, char* inv[], char* response, int n) {
 	}
 
 
+	return 0;
+
+}
+
+/*
+ * ADDITIONAL FUNCTION
+ * determines if the intent is 'open'
+ */
+int chatbot_is_open(const char* intent) {
+
+	/* to be implemented */
+	return compare_token(intent, "open") == 0;
+
+}
+
+/*
+ * ADDITIONAL FUNCTION
+ * Respond to 'open'
+ *
+ * prints out every line of 'knowledge' of the chatbot
+ */
+int chatbot_do_open(int inc, char* inv[], char* response, int n) {
+
+	if (knowledge_open() != 0)
+		snprintf(response, n, "Chatbot knowledge printed.");
+	else
+		snprintf(response, n, "Chatbot has no knowledge to show.");
 	return 0;
 
 }
