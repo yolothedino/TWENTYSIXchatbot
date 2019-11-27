@@ -534,9 +534,11 @@ int chatbot_do_help(int inc, char* inv[], char* response, int n) {
 		printf("===============================================================================\n");
 		printf("\"exit\" - Exit the program.\n");
 		printf("\"what/who/where <query>\" - Ask the chatbot a what/who/where question.\n");
-		printf("\"load\" - Load knowledge to the bot from an ini file.\n");
-		printf("\"save\" - Save a bot's current knowledge to an ini file.\n");
+		printf("\"load <filename.ini>\" - Load knowledge to the bot from an ini file. This adds on current existing knowledge.\n");
+		printf("\"save <filename.ini>\" - Save a chatbot's current knowledge to an ini file.\n");
 		printf("\"reset\" - Resets a bot's current knowledge.\n");
+		printf("=================================OTHER FUNCTIONS===============================\n");
+		printf("\"name <newname>\" - Change the chatbot's name.\n");
 		printf("===============================================================================\n");
 		//more if needed
 
