@@ -110,6 +110,31 @@ int chatbot_main(int inc, char *inv[], char *response, int n) {
 		snprintf(response, n, "");
 		return 0;
 	}
+	else if (strlen(inv[0]) > MAX_INTENT)
+	{
+		snprintf(response, n, "Input too large. Please limit INTENT to length of %d.", MAX_INTENT);
+		return 0;
+	}
+	else if (inc > 1)
+	{
+		char catbuf[MAX_INPUT] = "";
+		for (int i = 1; i < inc; i++)
+		{
+			if (strcmp(catbuf, "") == 0)
+				strcpy(catbuf, inv[i]);
+			else
+				sprintf(catbuf, "%s %s", catbuf, inv[i]);
+		}
+
+
+
+		if (strlen(catbuf) > MAX_ENTITY)
+		{
+			snprintf(response, n, "Input too large. Please limit ENTITY to length of %d.",  MAX_ENTITY);
+			return 0;
+		}
+	}
+	
 
 	/* look for an intent and invoke the corresponding do_* function */
 	if (chatbot_is_exit(inv[0]))
@@ -206,24 +231,32 @@ int chatbot_is_load(const char *intent) {
  */
 int chatbot_do_load(int inc, char *inv[], char *response, int n) {
 	
-	/* to be implemented */
 	FILE* fp;
 	if (inv[1] == NULL) {
 		snprintf(response, n, "Invalid - Please enter in the format of \"load <filename.ini>\"");
 		return 0;
 	}
-	else {
-		fp = fopen(inv[1], "r");
-		if (fp == NULL) { 
-			snprintf(response, n, "Filename \"%s\" not found. Be sure to enter .ini after the file's name. e.g \"MyFileName.ini\".", inv[1]); 
-		}
-		else {
-			int count = knowledge_read(fp, botName);
-			snprintf(response, n, "read total %d knowledge lines from %s", count, inv[1]);
-			fclose(fp);
-		}
-		return 0;
+
+	char catbuf[MAX_INPUT] = "";
+	for (int i = 1; i < inc; i++)
+	{
+		if (strcmp(catbuf, "") == 0)
+			strcpy(catbuf, inv[i]);
+		else
+			sprintf(catbuf, "%s %s", catbuf, inv[i]);
 	}
+
+
+	fp = fopen(catbuf, "r");
+	if (fp == NULL) {
+		snprintf(response, n, "Filename \"%s\" not found. Be sure to enter .ini after the file's name. e.g \"MyFileName.ini\".", catbuf);
+	}
+	else {
+		int count = knowledge_read(fp, botName);
+		snprintf(response, n, "read total %d knowledge lines from %s", count, catbuf);
+		fclose(fp);
+	}
+	return 0;
 	 
 }
 
@@ -298,10 +331,9 @@ int chatbot_do_question(int inc, char *inv[], char *response, int n) {
 				{
 					printf("%s: I dont know %s. %s is %s?\n", chatbot_botname(), catbuf, inv[0], catbuf);
 					printf("%s:", chatbot_username());
-					fgets(tempbuf, n, stdin);	//tempbuf = the answer to the question. supplied by the user
+					fgets(tempbuf, MAX_INPUT, stdin);	//tempbuf = the answer to the question. supplied by the user
 
-					//check if the user pressed enter instead of entering an answer
-					//effectively, there is no answer.
+					//check if the user pressed enter instead of entering an answer (i.e no answer)
 					if (tempbuf[0] == '\n' || tempbuf[0] == ' ')
 					{
 
@@ -451,22 +483,31 @@ int chatbot_do_save(int inc, char* inv[], char* response, int n) {
 		snprintf(response, n, "Invalid - Please enter in the format of \"save <filename.ini>\"");
 		return 0;
 	}
-	else {
-		//checks if its save to if it is move the inv up by 1
-		if (compare_token(inv[1], "to") == 0) { i++; }
-		fp = fopen(inv[i], "w+");
-		if (fp == NULL)
-			snprintf(response, n, "Filename \"%s\" not found. Be sure to enter .ini after the file's name. e.g \"MyFileName.ini\".", inv[1]);
-		else {
-			fwrite("[NAME]\n", 7, 1, fp);
-			fwrite("name=", 5, 1, fp);
-			fwrite(botName, 10, 1, fp);
-			fwrite("\n\n", 2, 1, fp);
-			knowledge_write(fp);
-			snprintf(response, n, "My knowledge has been saved to %s.", inv[i]);
-		}
-		fclose(fp);
+
+	char catbuf[MAX_INPUT] = "";
+	for (int i = 1; i < inc; i++)
+	{
+		if (strcmp(catbuf, "") == 0)
+			strcpy(catbuf, inv[i]);	//copies next in line words to catbuf, effectively concatenating the string.
+		else
+			sprintf(catbuf, "%s %s", catbuf, inv[i]);
 	}
+	
+	//if (compare_token(inv[1], "to") == 0) { i++; }		//checks if its save to if it is move the inv up by 1
+	fp = fopen(catbuf, "w+");
+	if (fp == NULL)
+		snprintf(response, n, "Filename \"%s\" not found. Be sure to enter .ini after the file's name. e.g \"MyFileName.ini\".", catbuf);
+	else {
+		fwrite("[NAME]\n", 7, 1, fp);
+		fwrite("name=", 5, 1, fp);
+		fwrite(botName, 10, 1, fp);
+		fwrite("\n\n", 2, 1, fp);
+		knowledge_write(fp);
+		snprintf(response, n, "My knowledge has been saved to %s.", catbuf);
+	}
+	fclose(fp);
+
+
 	return 0;
 
 }

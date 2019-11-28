@@ -1,0 +1,12 @@
+[name]
+name=CatBot
+
+[what]
+cat=meow
+food=eat
+
+[who]
+cat=Me-ow
+
+[where]
+cat=tree

@@ -72,6 +72,9 @@ int main(int argc, char *argv[]) {
 		
 	} while (!done);
 	
+	printf("Press ENTER key to Quit\n");
+	getchar();
+
 	return 0;
 }
 
