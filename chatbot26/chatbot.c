@@ -327,7 +327,7 @@ int chatbot_do_question(int inc, char *inv[], char *response, int n) {
 
 				//knowledge not inside - i.e bot is dumb
 				//make bot slightly less dumb by having it ask for the answer
-				else if (knowledge_get(inv[0], catbuf, response, n) == KB_NOTFOUND)
+				else if (knowledge_get(inv[0], catbuf, response, n) == KB_NOTFOUND)	//inv[0] and catbuf are the INTENT and ENTITY respectively.
 				{
 					printf("%s: I dont know %s. %s is %s?\n", chatbot_botname(), catbuf, inv[0], catbuf);
 					printf("%s:", chatbot_username());
@@ -375,7 +375,7 @@ int chatbot_do_question(int inc, char *inv[], char *response, int n) {
 				// check for entity in linked list
 				if (knowledge_get(inv[0], catbuf, response, n) == KB_OK)
 				{
-					printresponse(inv[0], catbuf, response, n);
+					printresponse(inv[0], catbuf, response, n);	//responds with an existing knowledge
 				}
 				else if (knowledge_get(inv[0], catbuf, response, n) == KB_NOTFOUND)
 				{
@@ -528,7 +528,8 @@ int chatbot_is_smalltalk(const char *intent) {
 	
 	/* to be implemented */
 	return compare_token(intent, "joke") == 0 || compare_token(intent, "hi") == 0 || compare_token(intent, "hello") == 0
-		|| compare_token(intent, "cat") == 0 || compare_token(intent, "marco") == 0 || compare_token(intent, "dadjoke") == 0;
+		|| compare_token(intent, "cat") == 0 || compare_token(intent, "marco") == 0 || compare_token(intent, "dadjoke") == 0
+		|| compare_token(intent, "I") == 0 || compare_token(intent, "I'm") == 0;
  
 }	
 
@@ -545,43 +546,26 @@ int chatbot_is_smalltalk(const char *intent) {
  */
 int chatbot_do_smalltalk(int inc, char *inv[], char *response, int n) {
 	
-	/* to be implemented */
-	
-	if (compare_token(inv[0], "joke") == 0 )
-	{
-		snprintf(response, n, "This is the one joke I know.\nWhat has four legs and can fly?\nTwo birds.");
-		return 0;
-	}
-
-	if (compare_token(inv[0], "dadjoke") == 0)
-	{
-		snprintf(response, n, "This is the best joke I know.\nJimmy: Dad, I'm hungry. \nDad: Hi hungry, I'm Dad.");
-		return 0;
-	}
-
 	if (compare_token(inv[0], "hello") == 0 || compare_token(inv[0], "hi") == 0)
-	{
-		snprintf(response, n, "Hello!");	
-		return 0;
-	}
+		snprintf(response, n, "Hello!");
 
-	if (compare_token(inv[0], "cat") == 0)
-	{
-		snprintf(response, n, "meow!");
-		return 0;
-	}
+	else if (compare_token(inv[0], "cat") == 0)
+		snprintf(response, n, "meow!"); 
 
-	if (compare_token(inv[0], "marco") == 0)
-	{
+	else if (compare_token(inv[0], "joke") == 0 )
+		snprintf(response, n, "This is the one joke I know.\nWhat has four legs and can fly?\nTwo birds.");
+
+	else if (compare_token(inv[0], "dadjoke") == 0)
+		snprintf(response, n, "This is the best joke I know.\nJimmy: Dad, I'm hungry. \nDad: Hi hungry, I'm Dad.");
+
+	else if (compare_token(inv[0], "marco") == 0)
 		snprintf(response, n, "polo");
-		return 0;
-	}
 
-	else
-	{
-		snprintf(response, n, "hoho i dont get it");	//will never happen (probably?)
-		return 0;
-	}
+	else if (compare_token(inv[0], "i") == 0)
+		snprintf(response, n, "Okay.");
+
+	else if (compare_token(inv[0], "i'm") == 0)
+		snprintf(response, n, "Hi %s, I'm %s.", inv[1], botName);
 
 	return 0;
 	
@@ -624,6 +608,7 @@ int chatbot_do_help(int inc, char* inv[], char* response, int n) {
 		printf("\"name <newname>\" - Change the chatbot's name.\n");
 		printf("\"open\" - Prints out chatbot's current knowledge\n");
 		printf("\"forget <intent> <entity>\" - Remove a certain line of the chatbot's knowledge.\n");
+		printf("\"weather <cityName>\" - Find out weather information from a particular city (requires internet connection)\n");
 		printf("==================================SMALLTALK====================================\n");
 		printf("\"hi\" \"hello\" \"cat\" \"joke\" \"dadjoke\" \"marco\" \n");
 		printf("===============================================================================\n");
